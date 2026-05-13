@@ -1,0 +1,35 @@
+# AI Evidence Format
+
+> Structured citations that travel with LLM-generated claims.
+
+An open JSON spec for structured citations attached to LLM-generated claims: source URI + type + publisher, span (text-quote / CSS selector / page range), retrieval method + confidence + freshness, content-hash verification, synthesis role.
+
+## Identity
+
+- **Subdomain**: [evidence.kineticgain.com](https://evidence.kineticgain.com/)
+- **Spec repo**: [github.com/mizcausevic-dev/ai-evidence-format-spec](https://github.com/mizcausevic-dev/ai-evidence-format-spec)
+- **Detect via**: top-level `evidence_version` field in the JSON document
+- **Buyer audience**: RAG / Search / Answer engines
+- **Category**: Core spec — AI Evidence Format (citation provenance)
+- **License**: AGPL-3.0 for spec text; Apache-2.0 for the landing site
+- **Deployment**: GitHub Actions FTP CI/CD on push to main
+
+## Pages
+
+- [/](https://evidence.kineticgain.com/): AI Evidence Format — Structured citations that travel with LLM-generated claims.
+
+## Part of the Kinetic Gain Protocol Suite
+
+A family of **10 open JSON specifications** for the answer-engine and agent era — five core (AEO, Prompt Provenance, Agent Cards, AI Evidence Format, MCP Tool Cards), a three-spec EdTech trio (Tutor Cards / Student AI Disclosure / Classroom AI AUP), a HealthTech extension (Clinical AI Disclosure), and a cross-cutting Incident Card. **Two regulated verticals covered.**
+
+- **Front door**: [suite.kineticgain.com](https://suite.kineticgain.com/)
+- **Quickstart hub**: [docs.kineticgain.com](https://docs.kineticgain.com/)
+- **Unified MCP server** (34 tools, 8 specs, v0.4.0): [github.com/mizcausevic-dev/mcp-kinetic-gain](https://github.com/mizcausevic-dev/mcp-kinetic-gain)
+- **Unified visualizer** (8 renderers): [github.com/mizcausevic-dev/kinetic-gain-visualizer](https://github.com/mizcausevic-dev/kinetic-gain-visualizer)
+- **Meta-repo**: [github.com/mizcausevic-dev/kinetic-gain-protocol-suite](https://github.com/mizcausevic-dev/kinetic-gain-protocol-suite)
+
+## Author
+
+- **Miz Causevic** · Director / Principal Platform Engineering · Boston, MA
+- [github.com/mizcausevic-dev](https://github.com/mizcausevic-dev) · [linkedin.com/in/mirzacausevic](https://www.linkedin.com/in/mirzacausevic/) · [kineticgain.com](https://kineticgain.com/) · [medium.com/@mizcausevic](https://medium.com/@mizcausevic/)
+- ~30 years across IBM, CyberArk, Alteryx, Digital.ai, Gryphon.ai
