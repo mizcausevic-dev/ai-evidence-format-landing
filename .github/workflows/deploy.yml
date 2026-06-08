@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   deploy:
-    name: FTP-sync static site to evidence.kineticgain.com
+    name: SFTP-sync static site to evidence.kineticgain.com
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,55 +24,43 @@ jobs:
           echo "OK: site root verified"
           ls -lah
 
-      - name: FTP-Deploy to /evidence/ (first attempt)
-        id: deploy
-        timeout-minutes: 5
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        continue-on-error: true
+      # Deploy over SSH (port 65002) rather than FTP (port 21). Hostinger blocks
+      # GitHub-runner IPs on port 21 (530/timeout) but not on 65002, so SFTP-key
+      # deploys land where FTP fails. Mirrors kinetic-gain-suite-landing's proven
+      # path. Key is repo secret SSH_PRIVATE_KEY (registered in hPanel SSH Keys).
+      - name: Load SSH key into ssh-agent (webfactory)
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387  # v0.9.0
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
-          protocol: ftps
-          port: 21
-          timeout: 60000
-          local-dir: ./
-          server-dir: /evidence/
-          dangerous-clean-slate: false
-          log-level: standard
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github/**
-            **/node_modules/**
-            **/.DS_Store
-            **/README.md
-            **/LICENSE
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Sleep before retry (let FTP cap drain)
-        if: steps.deploy.outcome == 'failure'
-        run: sleep 60
+      - name: Seed known_hosts for Hostinger:65002
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          HOST="${FTP_HOST#ftp://}"; HOST="${HOST#sftp://}"; HOST="${HOST%/}"
+          ssh-keyscan -p 65002 -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          echo "known_hosts seeded for $HOST:65002"
 
-      - name: Retry FTP-Deploy if first attempt failed
-        if: steps.deploy.outcome == 'failure'
-        timeout-minutes: 5
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
-          protocol: ftps
-          port: 21
-          timeout: 90000
-          local-dir: ./
-          server-dir: /evidence/
-          dangerous-clean-slate: false
-          log-level: verbose
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github/**
-            **/node_modules/**
-            **/.DS_Store
-            **/README.md
-            **/LICENSE
+      - name: SFTP-Deploy to /evidence/ via tar | ssh
+        timeout-minutes: 8
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+        run: |
+          set -euo pipefail
+          HOST="${FTP_HOST#ftp://}"; HOST="${HOST#sftp://}"; HOST="${HOST%/}"
+          # Tar the static site (excluding repo metadata), pipe over SSH, untar
+          # on the server into the evidence.kineticgain.com docroot.
+          tar --exclude='./.git' --exclude='./.github' --exclude='.gitignore' \
+              --exclude='node_modules' --exclude='.DS_Store' \
+              --exclude='README.md' --exclude='LICENSE' \
+              -czf - . | \
+          ssh -o StrictHostKeyChecking=accept-new \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=15 \
+              -p 65002 \
+              "$FTP_USER@$HOST" \
+              'cd domains/kineticgain.com/public_html/evidence/ && tar -xzf - && echo "DEPLOY_EXTRACTED"'
+          echo "SFTP deploy complete."
