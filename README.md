@@ -4,7 +4,7 @@ Static landing site for the **[AI Evidence Format spec](https://github.com/mizca
 
 Live at **[evidence.kineticgain.com](https://evidence.kineticgain.com)**.
 
-Hand-written HTML + CSS, no build step, FTPS-deployed to Hostinger on push to `main`.
+Hand-written HTML + CSS, no build step. Pushes to `main` trigger an SFTP upload attempt to Hostinger; verify the live page after the workflow.
 
 ## License
-Apache-2.0. Underlying spec is AGPL-3.0.
+Apache-2.0. Underlying spec is MIT-licensed.
